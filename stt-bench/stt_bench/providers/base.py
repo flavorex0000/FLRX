@@ -77,6 +77,13 @@ class Provider:
             time.sleep(2 ** (attempt + 1))
         raise AssertionError("unreachable")
 
+    def cleanup(self, method: str, url: str, **kw) -> None:
+        """임시 파일·작업 삭제. 실패해도 원래 결과나 오류를 가리지 않도록 무시한다."""
+        try:
+            self.http(method, url, **kw)
+        except Exception:
+            pass
+
     def poll(self, fn, *, interval: float = 3, timeout: float = 3600):
         """fn() 이 None 이 아닌 값을 돌려줄 때까지 반복."""
         deadline = time.time() + timeout

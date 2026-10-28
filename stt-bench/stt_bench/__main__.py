@@ -80,13 +80,13 @@ def transcribe_one(p, src: Path, lang: str, work: Path, terms: list[str], prompt
 
 
 def cmd_run(args) -> None:
-    samples = discover_samples(Path(args.samples))
-    if not samples:
-        sys.exit(f"{args.samples}/ko, /mixed, /en 폴더에 음성 파일이 없습니다. README 의 '샘플 준비'를 보세요.")
     keys = list(REGISTRY) if args.providers == "all" else [k.strip() for k in args.providers.split(",")]
     unknown = [k for k in keys if k not in REGISTRY]
     if unknown:
         sys.exit(f"알 수 없는 서비스: {unknown}. 가능한 값: {list(REGISTRY)}")
+    samples = discover_samples(Path(args.samples))
+    if not samples:
+        sys.exit(f"{args.samples}/ko, /mixed, /en 폴더에 음성 파일이 없습니다. README 의 '샘플 준비'를 보세요.")
     contexts = ["none", "terms"] if args.context == "both" else [args.context]
     terms = [t.canonical for t in score.load_glossary(args.glossary)]
     out = Path(args.out or ROOT / "results" / datetime.now().strftime("%Y%m%d-%H%M"))
