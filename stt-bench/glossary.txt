@@ -2,7 +2,50 @@
 # 형식: 원어표기 | 허용표기1 | 허용표기2 ...
 #  - 첫 항목(원어표기)은 --context terms 일 때 서비스에 용어 힌트로 전달됩니다.
 #  - 채점: term_exact = 정답 전사본과 같은 표기로 맞힘, term_any = 같은 줄의 다른 표기(한글 음차 등)로라도 맞힘
-#  - 수강 과목에 맞게 자유롭게 추가·삭제하세요. 서비스별 개수 제한은 어댑터가 앞에서부터 자릅니다.
+#  - 수강 과목에 맞게 자유롭게 추가·삭제하세요. 서비스별 개수 제한은 어댑터가 앞에서부터 자르므로
+#    (Deepgram 50개, Grok 100개) 이번에 시험할 과목의 용어를 맨 앞에 두세요.
+
+# 컴퓨터구조
+pipeline | 파이프라인
+pipeline hazard | 파이프라인 해저드
+data hazard | 데이터 해저드
+control hazard | 컨트롤 해저드
+forwarding | 포워딩
+CPI
+clock cycle | 클럭 사이클 | 클록 사이클
+multi-cycle | multicycle | multi cycle | 멀티사이클
+instruction fetch | 명령어 인출
+register file | 레지스터 파일
+datapath | 데이터패스
+MEM
+WB
+ALU
+
+# 영상처리
+frequency domain | 주파수 도메인 | 주파수 영역
+spatial domain | 공간 도메인 | 공간 영역
+low-frequency | low frequency | 저주파
+high-frequency | high frequency | 고주파
+frequency spectrum | 주파수 스펙트럼
+log transformation | 로그 변환
+intensity transformation | 명암 변환
+histogram equalization | 히스토그램 평활화
+DFT
+FFT
+
+# 반도체공정
+lithography | 리소그래피
+optical lithography | 옵티컬 리소그래피 | 광 리소그래피
+immersion lithography | 이머전 리소그래피 | 액침 리소그래피
+photomask | 포토마스크
+photoresist | PR | 포토레지스트 | 포토리지스트
+wafer | 웨이퍼
+soft bake | 소프트 베이크
+reduction system | 리덕션 시스템
+refractive index | 굴절률
+Snell's law | 스넬의 법칙 | 스넬 법칙
+EUV
+UV
 
 # 회로이론
 op-amp | op amp | opamp | 오피앰프 | 연산증폭기
