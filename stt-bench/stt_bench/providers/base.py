@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -57,6 +58,7 @@ class Provider:
     def http(self, method: str, url: str, **kw) -> requests.Response:
         kw.setdefault("timeout", self.timeout)
         for attempt in range(4):
+            r = None
             try:
                 r = requests.request(method, url, **kw)
             except (requests.ConnectionError, requests.Timeout) as e:
@@ -74,7 +76,7 @@ class Provider:
                     fobj.seek(0)
             if hasattr(kw.get("data"), "seek"):
                 kw["data"].seek(0)
-            time.sleep(2 ** (attempt + 1))
+            time.sleep(max(2 ** (attempt + 1), _retry_after(r) if r is not None else 0))
         raise AssertionError("unreachable")
 
     def cleanup(self, method: str, url: str, **kw) -> None:
@@ -94,3 +96,15 @@ class Provider:
             time.sleep(interval)
             interval = min(interval * 1.3, 20)
         raise ProviderError("작업이 제한 시간 안에 끝나지 않았습니다")
+
+
+def _retry_after(r: requests.Response) -> float:
+    """429 응답이 알려 준 대기 시간. Retry-After 헤더나 본문의 "retry in 8s" 를 읽는다 (Gemini 등)."""
+    if r.status_code != 429:
+        return 0
+    try:
+        return min(float(r.headers.get("Retry-After", "")) + 1, 120)
+    except ValueError:
+        pass
+    m = re.search(r"retry in ([0-9.]+)\s*s", r.text, re.I)
+    return min(float(m.group(1)) + 1, 120) if m else 0

@@ -120,3 +120,15 @@ class ProvidersTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RetryAfterTest(unittest.TestCase):
+    def test_429_waits_as_server_says(self):
+        from stt_bench.providers import base
+
+        busy = FakeResponse({}, status=429)
+        busy.text = '{"error":{"message":"Rate limit exceeded ... Please retry in 8s or upgrade"}}'
+        ok = FakeResponse({"ok": 1})
+        with mock.patch("requests.request", side_effect=[busy, ok]), mock.patch("time.sleep") as sleep:
+            self.assertEqual(base.Provider().http("POST", "https://x").json(), {"ok": 1})
+        sleep.assert_called_once_with(9.0)
