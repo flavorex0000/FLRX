@@ -121,6 +121,13 @@ def cmd_run(args) -> None:
                     print(f"실패: {str(e)[:200]}")
                     continue
                 meta.update(elapsed_sec=time.time() - t0, settings=r.settings)
+                if not r.text.strip():
+                    # 빈 결과는 조용히 0점 처리되지 않도록 실패로 기록 (원본 응답은 남김)
+                    meta["error"] = "빈 전사 결과"
+                    dst.with_suffix(".raw.json").write_text(json.dumps(r.raw, ensure_ascii=False, indent=1, default=str), "utf-8")
+                    dst.with_suffix(".error.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), "utf-8")
+                    print("실패: 빈 전사 결과")
+                    continue
                 dst.write_text(r.text + "\n", "utf-8")
                 dst.with_suffix(".raw.json").write_text(json.dumps(r.raw, ensure_ascii=False, indent=1, default=str), "utf-8")
                 dst.with_suffix(".meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), "utf-8")
@@ -189,7 +196,8 @@ def cmd_score(args) -> None:
         price = rs[0].get("usd_per_min")
         table.append({
             "variant": v, **by_cat,
-            "overall": _mean(mer_by_cat) if None not in mer_by_cat else None,
+            "overall": _mean(mer_by_cat),
+            "partial": None in mer_by_cat,
             "term_exact": _mean(r.get("term_exact") for r in rs),
             "term_any": _mean(r.get("term_any") for r in rs),
             "num": _mean(r.get("num_recall") for r in rs),
@@ -205,8 +213,12 @@ def cmd_score(args) -> None:
           "|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
     for i, t in enumerate(table, 1):
         md.append(f"| {i} | {t['variant']} | {_pct(t['ko'])} | {_pct(t['mixed'])} | {_pct(t['en'])} | "
-                  f"**{_pct(t['overall'])}** | {_pct(t['term_exact'])} | {_pct(t['term_any'])} | {_pct(t['num'])} | "
+                  f"**{_pct(t['overall'])}**{'*' if t['partial'] and t['overall'] is not None else ''} | {_pct(t['term_exact'])} | {_pct(t['term_any'])} | {_pct(t['num'])} | "
                   f"{_num(t['rtf'], '{:.2f}')} | {_num(t['usd_h'], '${:.2f}')} | {t['n']} |")
+    if any(t["partial"] for t in table):
+        md += ["", "\\* 일부 유형의 결과만 있어 있는 유형끼리만 평균했습니다. 다른 서비스와 직접 비교할 때 주의하세요."]
+    md += ["", "MER 은 한글 음절 단위라 영어 용어를 한글로 음차하면(예: MOSFET → 모스펫, 4토큰) 크게 깎입니다. "
+           "용어를 알아들었는지는 '용어(음차 허용)' 열로 따로 보세요."]
     md += ["", "## 파일별 상세", "", "| 서비스@조건 | 유형 | 파일 | CER | WER | MER | 용어(원어) | 놓친 용어 |",
            "|---|---|---|---:|---:|---:|---:|---|"]
     for r in sorted(rows, key=lambda r: (r["category"], r["sample"], r.get("mer") or 9)):

@@ -12,6 +12,7 @@ from .base import Provider, Result
 
 class _AzureFast(Provider):
     env = ("AZURE_SPEECH_ENDPOINT", "AZURE_SPEECH_KEY")
+    locale_codes = {"ko": "ko", "en": "en"}
     max_seconds = 2 * 3600           # 문서마다 2시간/5시간으로 달라 보수적으로
     timeout = 3600
 
@@ -21,8 +22,8 @@ class _AzureFast(Provider):
     def transcribe(self, req):
         definition = {"enhancedMode": self.enhanced(req), "profanityFilterMode": "None"}
         # 혼용: locales 를 비우면 자동 감지. 지정하면 강한 단일 언어 힌트가 된다
-        if req.lang in ("ko", "en"):
-            definition["locales"] = [req.lang]
+        if req.lang in self.locale_codes:
+            definition["locales"] = [self.locale_codes[req.lang]]
         if req.terms:
             definition["phraseList"] = {"phrases": req.terms}
         url = self.getenv("AZURE_SPEECH_ENDPOINT").rstrip("/") + "/speechtotext/transcriptions:transcribe?api-version=2025-10-15"
@@ -52,15 +53,10 @@ class LLMSpeech(_AzureFast):
     key = "azure-llm"
     label = "Azure LLM Speech"
     usd_per_min = 0.36 / 60          # Fast Transcription 과 같은 요금
+    locale_codes = {"ko": "ko-KR", "en": "en-US"}   # MAI 와 달리 "ko" 는 InvalidLocale
 
     def enhanced(self, req):
-        mode = {"enabled": True, "task": "transcribe"}   # model 을 지정하지 않아야 LLM Speech 가 선택됨
-        if req.prompt or req.terms:
-            # 프롬프트는 영어 권장, 4,096자 이내
-            prompt = ("This is a university electrical engineering lecture. Korean speech is mixed with English "
-                      "technical terms. Write English technical terms in English, not in Hangul transliteration. "
-                      "Write numbers and units as digits and symbols.")
-            if req.terms:
-                prompt += " Pay attention to " + ", ".join(f"*{t}*" for t in req.terms) + "."
-            mode["prompt"] = [prompt[:4096]]
-        return mode
+        # model 을 지정하지 않아야 LLM Speech 가 선택됨.
+        # 문서의 prompt("Pay attention to *...*" 등)를 넣으면 한영 혼용 음성에서 빈 결과가 나와
+        # (2026-10-28 실측) 용어는 phraseList 로만 전달한다.
+        return {"enabled": True, "task": "transcribe"}

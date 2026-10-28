@@ -14,11 +14,11 @@
 | `gemini` | Google `gemini-3.5-transcribe` | `language_codes` 생략 → 자동 감지, 문장 내 전환 지원 | `custom_vocabulary` (프롬프트 입력 없음) | 약 $0.30/h |
 | `openai` | OpenAI `gpt-transcribe` | `languages[]=ko,en` | `prompt` + `keywords[]` | $0.27/h |
 | `mai` | Microsoft `MAI-Transcribe-2` | `locales` 생략 → 자동 감지 | `phraseList` | $0.54/h (프로모션 별도) |
-| `azure-llm` | Azure LLM Speech | `locales` 생략 → 자동 감지 | 영어 지시문 `prompt` + `phraseList` | $0.36/h |
+| `azure-llm` | Azure LLM Speech | `locales` 생략 → 자동 감지 | `phraseList` (지시문 `prompt`는 빈 결과가 나와 제외) | $0.36/h |
 | `deepgram` | Deepgram `nova-3` | `language=multi` + `language_hint=ko,en` | `keyterm` (앞 50개) | $0.31/h (+$0.08/h) |
 | `alibaba` | Alibaba `qwen-audio-3.1-asr-flash-filetrans` | `language_hints=[ko,en]` | `vocabulary` 핫워드 + `context` | 토큰 과금 |
 | `grok` | xAI `grok-voice-transcribe-2.0` | `language` 생략 → 자동 감지, 녹음 중 전환 처리 | `keyterm` (최대 100개) | $0.10/h |
-| `clova` | NAVER CLOVA Speech 장문 인식 | `language=enko` | `boostings` | 원화 과금 |
+| `clova` | NAVER CLOVA Speech 장문 인식 | `language=enko` | `boostings` (가중치 1) | 원화 과금 |
 | `daglo` | 다글로 Async STT | `language=mixed` | `keywordBoost` | 비공개 (신규 약 10시간 무료) |
 
 이전 대화에서 정리한 목록과 달라진 점:
@@ -27,6 +27,11 @@
 - **Alibaba 모델 ID는 소문자**(`qwen-audio-3.1-asr-flash-filetrans`)입니다. 파일 직접 업로드를 받지 않으므로, 공식 임시 저장소(48시간 보관)에 올린 뒤 전사를 요청합니다.
 - **CLOVA 비동기 모드는 콜백 주소가 필수입니다.** 그래서 2시간 이하 파일에 쓸 수 있는 동기 모드로 요청합니다.
 - **다글로의 `mixed`는 별도 모드가 아니라 언어 설정 값입니다.**
+
+실제 키로 확인한 동작 (2026-10-28, 16초 합성 음성):
+- **Azure LLM Speech**: 문서에 나온 지시문(`prompt`, 예: "Pay attention to \*MOSFET\*")을 넣으면 한영 혼용 음성에서 결과가 빈 문자열로 나왔습니다. 그래서 용어는 `phraseList`로만 넘깁니다. 단일 언어로 지정할 때 코드는 `ko-KR`이며 `ko`는 거절됩니다. MAI는 반대로 `ko`를 씁니다.
+- **CLOVA**: 용어 60여 개를 가중치 3으로 주면 앞 문장들이 통째로 빠졌습니다. 그래서 가중치를 1로 둡니다.
+  - `MOSFET|모스펫`처럼 "표기|발음" 형식으로 주면 영어 원어로 적어 줍니다. 다만 지금 용어 목록 형식으로는 이 기능을 쓰지 않습니다.
 
 ## 사용 방법
 
@@ -101,11 +106,8 @@ python -m stt_bench score results/20261028-1530
 
 ## 주의할 점
 
-- **실제 키로는 아직 시험하지 못했습니다.** 요청 형식은 공식 문서를 따랐고 가짜 응답으로 테스트했지만, 다음 항목은 문서가 불분명해 첫 실행에서 확인이 필요합니다.
-  - 다글로: 파일 업로드 시 `sttConfig`를 보내는 형식
-  - Gemini: 응답 JSON에서 텍스트 위치 (문서에 두 형식이 섞여 있어 둘 다 처리)
-  - Alibaba: 임시 저장소 업로드 응답의 필드 이름
-  - 오류가 나면 `.error.json`에 서비스 응답 원문이 남으니 그 내용을 보고 고치면 됩니다.
+- **Gemini는 아직 실제 키로 확인하지 못했습니다.** 나머지 10개는 실제 API로 정상 동작을 확인했습니다. 오류가 나면 `.error.json`에 서비스 응답 원문이 남습니다.
+- 빈 전사 결과는 0점으로 조용히 넘어가지 않도록 실패로 기록합니다.
 - **OpenAI는 파일당 25MB 제한이 있습니다.** 그래서 23분 단위로 잘라 보내고 결과를 이어 붙입니다. 잘린 경계에서 단어가 한두 개 빠질 수 있습니다.
 - **Deepgram은 서버 처리가 10분을 넘으면 실패합니다.** 아주 긴 강의는 잘라서 넣으세요.
 - **요금은 표준 단가로 계산한 추정치입니다.** 무료 크레딧, 프로모션, 용어 기능 추가 요금은 반영하지 않았습니다.

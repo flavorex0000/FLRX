@@ -25,7 +25,8 @@ class Clova(Provider):
         # 한 음절 키워드는 미지원, 최대 1,000개
         words = [t for t in req.terms if len(t) > 1][:1000]
         if words:
-            params["boostings"] = [{"words": ",".join(words), "weight": 3}]
+            # weight 3 에서는 용어 60여 개를 주면 문장 앞부분이 통째로 빠졌다 (2026-10-28 실측)
+            params["boostings"] = [{"words": ",".join(words), "weight": 1}]
         url = self.getenv("CLOVA_SPEECH_INVOKE_URL").rstrip("/") + "/recognizer/upload"
         with open(req.audio, "rb") as f:
             r = self.http("POST", url, headers={"X-CLOVASPEECH-API-KEY": self.getenv("CLOVA_SPEECH_SECRET")}, files={

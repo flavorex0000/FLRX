@@ -106,10 +106,12 @@ class ProvidersTest(unittest.TestCase):
         self.assertNotIn("locales", definition)
         self.assertEqual(definition["enhancedMode"]["model"], "MAI-Transcribe-2")
 
-        _, calls = self.run_provider("azure-llm", Request(self.audio, "mixed", ["MOSFET"], "p"))
-        mode = json.loads(calls[0][2]["files"]["definition"][1])["enhancedMode"]
-        self.assertNotIn("model", mode)
-        self.assertIn("*MOSFET*", mode["prompt"][0])
+        _, calls = self.run_provider("azure-llm", Request(self.audio, "ko", ["MOSFET"], "p"))
+        definition = json.loads(calls[0][2]["files"]["definition"][1])
+        self.assertNotIn("model", definition["enhancedMode"])
+        self.assertNotIn("prompt", definition["enhancedMode"])
+        self.assertEqual(definition["locales"], ["ko-KR"])
+        self.assertEqual(definition["phraseList"]["phrases"], ["MOSFET"])
 
         _, calls = self.run_provider("grok", Request(self.audio, "mixed", ["MOSFET"]))
         self.assertNotIn("language", dict(calls[0][2]["data"]))
