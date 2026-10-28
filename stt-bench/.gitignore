@@ -1,0 +1,7 @@
+.env
+.cache/
+__pycache__/
+# 강의 음성과 정답 전사본은 저작권·개인정보 때문에 기본적으로 커밋하지 않음
+samples/*/*
+!samples/*/.gitkeep
+results/

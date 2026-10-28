@@ -1,0 +1,63 @@
+# 전자공학 전공용어 목록
+# 형식: 원어표기 | 허용표기1 | 허용표기2 ...
+#  - 첫 항목(원어표기)은 --context terms 일 때 서비스에 용어 힌트로 전달됩니다.
+#  - 채점: term_exact = 정답 전사본과 같은 표기로 맞힘, term_any = 같은 줄의 다른 표기(한글 음차 등)로라도 맞힘
+#  - 수강 과목에 맞게 자유롭게 추가·삭제하세요. 서비스별 개수 제한은 어댑터가 앞에서부터 자릅니다.
+
+# 회로이론
+op-amp | op amp | opamp | 오피앰프 | 연산증폭기
+impedance | 임피던스
+admittance | 어드미턴스
+reactance | 리액턴스
+capacitor | 커패시터 | 캐패시터
+inductor | 인덕터
+Thevenin | 테브난 | 테브낭
+Norton | 노턴
+KCL
+KVL
+phasor | 페이저
+transfer function | 전달함수
+Bode plot | 보드 선도 | 보드 플롯
+RLC
+
+# 전자회로
+MOSFET | 모스펫
+BJT
+CMOS | 씨모스
+transconductance | 트랜스컨덕턴스
+saturation region | 포화 영역
+triode region | 트라이오드 영역
+small-signal | small signal | 소신호
+common source | 공통 소스
+common emitter | 공통 이미터
+threshold voltage | 문턱 전압
+body effect | 바디 이펙트
+channel length modulation | 채널 길이 변조
+Miller effect | 밀러 효과
+current mirror | 전류 미러
+differential amplifier | 차동 증폭기
+
+# 신호 및 시스템
+Laplace transform | 라플라스 변환
+Fourier transform | 푸리에 변환
+z-transform | z transform | z 변환
+convolution | 컨볼루션 | 합성곱
+impulse response | 임펄스 응답
+Nyquist | 나이퀴스트
+aliasing | 에일리어싱
+sampling | 샘플링
+LTI
+
+# 반도체·전자기
+depletion region | 공핍 영역 | 공핍층
+p-n junction | pn junction | pn 접합 | p-n 접합
+doping | 도핑
+Fermi level | 페르미 준위
+electron mobility | 전자 이동도
+Maxwell's equations | 맥스웰 방정식
+
+# 디지털·회로설계
+flip-flop | flip flop | 플립플롭
+Verilog | 베릴로그
+FPGA
+SPICE | 스파이스
